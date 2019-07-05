@@ -176,17 +176,6 @@ class _BluetoothPageState extends State<BluetoothPage> {
         .toList();
   }
 
-  _buildActionButtons() {
-    if (isConnected) {
-      return <Widget>[
-        new IconButton(
-          icon: const Icon(Icons.cancel),
-          onPressed: () => _disconnect(),
-        )
-      ];
-    }
-  }
-
   _buildProgressBarTile() {
     return new LinearProgressIndicator();
   }
@@ -208,16 +197,13 @@ class _BluetoothPageState extends State<BluetoothPage> {
   }
 
   void _onItemTapped(int index) {
-    if(index==0) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => GamePage(
-            title: "Game",
-            device: device,
-          ),
-        ),
-      );
+    if (index == 1) {
+      if (isConnected) {
+        _disconnect();
+      }
+        scanResults.clear();
+        setState(() {});
+
     } else {
       if (isConnected || state != BluetoothState.on) {
         return null;
@@ -245,23 +231,22 @@ class _BluetoothPageState extends State<BluetoothPage> {
 
     return new MaterialApp(
         home: Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-          items: <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.videogame_asset),
-              title: Text("Play"),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.bluetooth_searching),
-              backgroundColor: Colors.green,
-              title: Text("Search"),
-            )
-          ],
-          onTap: _onItemTapped
-      ),
+      bottomNavigationBar: BottomNavigationBar(items: <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.bluetooth_searching),
+          title: Text("Search"),
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.bluetooth_disabled),
+          title: Text("Disconnect"),
+        )
+      ], onTap: _onItemTapped),
       appBar: new AppBar(
+        automaticallyImplyLeading: true,
         title: const Text('Connect Bluetooth Device'),
-        actions: _buildActionButtons(),
+          leading: IconButton(icon:Icon(Icons.arrow_back),
+            onPressed:() => Navigator.pop(context, device),
+          )
       ),
       //loatingActionButton: _buildScanningButton(), --- Replaced by navigationbaritem
       body: new Stack(

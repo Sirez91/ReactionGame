@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mo_co_app/BluetoothPage.dart';
 import 'package:mo_co_app/GamePage.dart';
 
+import 'HomePage.dart';
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -23,7 +25,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: BluetoothPage(title: 'Flutter Demo Home Page'),
+      home: HomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
