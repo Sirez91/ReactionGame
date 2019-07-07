@@ -2,9 +2,12 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mo_co_app/GameButton.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'SettingsPage.dart';
 
 class GamePage extends StatefulWidget {
   GamePage({Key key, this.title, this.device}) : super(key: key);
@@ -13,13 +16,12 @@ class GamePage extends StatefulWidget {
 
   final String title;
 
-
   @override
   _GamePageState createState() {
     if (device == null) {
       return _NoVibrateGamePageState(device);
     } else {
-      if(title == "Mixed Reaction Game") {
+      if (title == "Mixed Reaction Game") {
         return _MixedGamePageState(device);
       } else {
         return _VibrateGamePageState(device);
@@ -30,7 +32,6 @@ class GamePage extends StatefulWidget {
 
 abstract class _GamePageState extends State<GamePage> {
   bool _gameIsRunning = false;
-
 
   _GamePageState(this._device, this._iconSize);
 
@@ -62,8 +63,8 @@ abstract class _GamePageState extends State<GamePage> {
     await Future.delayed(const Duration(milliseconds: 100));
     _timer =
         Timer(Duration(milliseconds: _animationSpeedInMiliseconds - 100), () {
-          _gameOver();
-        });
+      _gameOver();
+    });
   }
 
   _writeCharacteristic();
@@ -81,7 +82,7 @@ abstract class _GamePageState extends State<GamePage> {
   _gameOver() {
     _stopVibration();
     _animationSpeedInMiliseconds = _baseAnimationSpeedInMiliseconds;
-    if(_counter>_highscore) {
+    if (_counter > _highscore) {
       _highscore = _counter;
       _saveHighscore(_counter);
     }
@@ -98,7 +99,7 @@ abstract class _GamePageState extends State<GamePage> {
                 child: new Text('OK'),
                 onPressed: () {
                   Navigator.of(context).pop();
-                  setState(() { });
+                  setState(() {});
                 },
               )
             ],
@@ -123,7 +124,7 @@ abstract class _GamePageState extends State<GamePage> {
   }
 
   void buttonAction(IconData icon) {
-    if(_gameIsRunning) {
+    if (_gameIsRunning) {
       _timer.cancel();
       if (_activeIcon == icon) {
         _startAnimation();
@@ -132,7 +133,6 @@ abstract class _GamePageState extends State<GamePage> {
       }
     }
   }
-
 
   Container _generateIcon() {
     if (_animationSpeedInMiliseconds == 0 || _counter == 0) {
@@ -144,23 +144,22 @@ abstract class _GamePageState extends State<GamePage> {
     switch (random) {
       case 0:
         _activeIcon = Icons.arrow_upward;
-        color = Colors.yellow;
+        color = SettingsPage.upArrowColor;
         break;
       case 1:
         _activeIcon = Icons.arrow_back;
-        color = Colors.blue;
+        color = SettingsPage.leftArrowColor;
         break;
       case 2:
         _activeIcon = Icons.arrow_forward;
-        color = Colors.red;
+        color = SettingsPage.rightArrowColor;
         break;
       case 3:
         _activeIcon = Icons.arrow_downward;
-        color = Colors.green;
+        color = SettingsPage.downArrowColor;
         break;
     }
-    if (_counter != 0)
-      _writeCharacteristic();
+    if (_counter != 0) _writeCharacteristic();
     return Container(
       height: _iconSize,
       child: Icon(_activeIcon, size: _iconSize, color: color),
@@ -175,6 +174,10 @@ abstract class _GamePageState extends State<GamePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
@@ -204,7 +207,8 @@ abstract class _GamePageState extends State<GamePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Text("Score: " + _counter.toString(),
+                Text(
+                  "Score: " + _counter.toString(),
                   style: TextStyle(fontSize: 30),
                 )
               ],
@@ -212,7 +216,8 @@ abstract class _GamePageState extends State<GamePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Text("Highscore: " + _highscore.toString(),
+                Text(
+                  "Highscore: " + _highscore.toString(),
                   style: TextStyle(fontSize: 15),
                 )
               ],
@@ -225,13 +230,10 @@ abstract class _GamePageState extends State<GamePage> {
             Row(
               children: <Widget>[
                 AnimatedContainer(
-                  width: MediaQuery
-                      .of(context)
-                      .size
-                      .width + 20,
+                  width: MediaQuery.of(context).size.width + 20,
                   padding: EdgeInsets.all(0.0),
-                  duration: Duration(
-                      milliseconds: _animationSpeedInMiliseconds),
+                  duration:
+                      Duration(milliseconds: _animationSpeedInMiliseconds),
                   alignment: _alignment,
                   child: _generateIcon(),
                 )
@@ -242,7 +244,7 @@ abstract class _GamePageState extends State<GamePage> {
               children: <Widget>[
                 GameButton(
                   onPressed: _topButtonPressed,
-                  color: Colors.yellow,
+                  color: SettingsPage.upArrowColor,
                   icon: Icons.arrow_upward,
                 ),
               ],
@@ -252,7 +254,7 @@ abstract class _GamePageState extends State<GamePage> {
               children: <Widget>[
                 GameButton(
                   onPressed: _leftButtonPressed,
-                  color: Colors.blue,
+                  color: SettingsPage.leftArrowColor,
                   icon: Icons.arrow_back,
                 ),
                 GameButton(
@@ -262,7 +264,7 @@ abstract class _GamePageState extends State<GamePage> {
                 ),
                 GameButton(
                   onPressed: _rightButtonPressed,
-                  color: Colors.red,
+                  color: SettingsPage.rightArrowColor,
                   icon: Icons.arrow_forward,
                 ),
               ],
@@ -272,25 +274,54 @@ abstract class _GamePageState extends State<GamePage> {
               children: <Widget>[
                 GameButton(
                   onPressed: _bottomButtonPressed,
-                  color: Colors.green,
+                  color: SettingsPage.downArrowColor,
                   icon: Icons.arrow_downward,
                 ),
               ],
             ),
-            Container(height: 80,)
+            Container(
+              height: 80,
+            )
           ],
         ),
       ),
-      floatingActionButton: _gameIsRunning ? null : FloatingActionButton(
-        onPressed: _startRound,
-        tooltip: 'start animation',
-        child: Icon(Icons.play_arrow),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      floatingActionButton: _gameIsRunning
+          ? null
+          : Container(
+              width: 100.0,
+              height: 100.0,
+              decoration: new BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey,
+                      blurRadius: 5.0, // has the effect of softening the shadow
+                      spreadRadius: 0.0, // has the effect of extending the shadow
+                      offset: Offset(
+                        0.0, // horizontal, move right 10
+                        4.0, // vertical, move down 10
+                      ),
+                    )
+                  ],
+                borderRadius: new BorderRadius.only(
+                  topLeft: new Radius.circular(100.0),
+                  bottomLeft: new Radius.circular(100.0),
+                  topRight: new Radius.circular(100.0),
+                  bottomRight: new Radius.circular(100.0),
+                ),
+              ),
+              child: new RawMaterialButton(
+                fillColor: Colors.green[500],
+                shape: new CircleBorder(),
+                elevation: 0.0,
+                child: Text("START\nGAME", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),),
+                onPressed: _startRound,
+              ), // This trailing comma makes auto-formatting nicer for build methods.
+            ),
     );
   }
 
   void _startRound() {
-    if(!_gameIsRunning) {
+    if (!_gameIsRunning) {
       _startAnimation();
       _gameIsRunning = true;
     }
@@ -298,7 +329,6 @@ abstract class _GamePageState extends State<GamePage> {
 }
 
 class _VibrateGamePageState extends _GamePageState {
-
   _VibrateGamePageState(BluetoothDevice device) : super(device, 0);
 
   @override
@@ -313,7 +343,6 @@ class _VibrateGamePageState extends _GamePageState {
     prefs.setInt(key, score);
     setState(() {});
   }
-
 
   _writeCharacteristic() async {
     BluetoothCharacteristic bluetoothCharacteristic = BluetoothCharacteristic(
@@ -330,8 +359,7 @@ class _VibrateGamePageState extends _GamePageState {
             authenticatedSignedWrites: false,
             extendedProperties: false,
             notifyEncryptionRequired: false,
-            indicateEncryptionRequired: false
-        ));
+            indicateEncryptionRequired: false));
     List<int> valueToWrite;
     if (_activeIcon == Icons.arrow_upward) {
       valueToWrite = [0xFF, 0x00, 0x00, 0x00];
@@ -361,8 +389,7 @@ class _VibrateGamePageState extends _GamePageState {
             authenticatedSignedWrites: false,
             extendedProperties: false,
             notifyEncryptionRequired: false,
-            indicateEncryptionRequired: false
-        ));
+            indicateEncryptionRequired: false));
     await _device.writeCharacteristic(
         bluetoothCharacteristic, [0x00, 0x00, 0x00, 0x00],
         type: CharacteristicWriteType.withoutResponse);
@@ -370,7 +397,6 @@ class _VibrateGamePageState extends _GamePageState {
 }
 
 class _NoVibrateGamePageState extends _GamePageState {
-
   _NoVibrateGamePageState(BluetoothDevice device) : super(device, 75);
 
   @override
@@ -391,7 +417,6 @@ class _NoVibrateGamePageState extends _GamePageState {
 }
 
 class _MixedGamePageState extends _GamePageState {
-
   _MixedGamePageState(BluetoothDevice device) : super(device, 75);
 
   @override
@@ -406,7 +431,6 @@ class _MixedGamePageState extends _GamePageState {
     prefs.setInt(key, score);
     setState(() {});
   }
-
 
   _writeCharacteristic() async {
     BluetoothCharacteristic bluetoothCharacteristic = BluetoothCharacteristic(
@@ -423,8 +447,7 @@ class _MixedGamePageState extends _GamePageState {
             authenticatedSignedWrites: false,
             extendedProperties: false,
             notifyEncryptionRequired: false,
-            indicateEncryptionRequired: false
-        ));
+            indicateEncryptionRequired: false));
     List<int> valueToWrite;
     if (_activeIcon == Icons.arrow_upward) {
       valueToWrite = [0xFF, 0x00, 0x00, 0x00];
@@ -454,8 +477,7 @@ class _MixedGamePageState extends _GamePageState {
             authenticatedSignedWrites: false,
             extendedProperties: false,
             notifyEncryptionRequired: false,
-            indicateEncryptionRequired: false
-        ));
+            indicateEncryptionRequired: false));
     await _device.writeCharacteristic(
         bluetoothCharacteristic, [0x00, 0x00, 0x00, 0x00],
         type: CharacteristicWriteType.withoutResponse);

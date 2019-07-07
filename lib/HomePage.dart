@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'BluetoothPage.dart';
 import 'GamePage.dart';
+import 'SettingsPage.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title, this.device}) : super(key: key);
@@ -60,6 +61,7 @@ class _HomePageState extends State<HomePage> {
   initState() {
     super.initState();
     _readHighscores();
+    _readColor();
   }
 
   @override
@@ -76,7 +78,7 @@ class _HomePageState extends State<HomePage> {
                   child: FlatButton.icon(
                     icon: Icon(Icons.settings),
                     label: Text("Settings"),
-                    onPressed: () => _openBluetooth(),
+                    onPressed: () => _openSettings(),
                   ),
                 ),
                 PopupMenuItem(
@@ -100,7 +102,7 @@ class _HomePageState extends State<HomePage> {
             Padding(
                 padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
                 child: new Text("Choose the Game Mode",
-                    style: TextStyle(fontSize: 26))),
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500))),
             Padding(
               padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
               child: new GestureDetector(
@@ -110,7 +112,7 @@ class _HomePageState extends State<HomePage> {
                   children: <Widget>[
                     Container(
                       padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                      child: new Icon(Icons.play_circle_filled),
+                      child: new Icon(Icons.play_circle_filled, color: Colors.green[500], size: 40,),
                     ),
                     new Text(
                       "Classic",
@@ -139,7 +141,7 @@ class _HomePageState extends State<HomePage> {
                     Container(
                       padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                       child: new Icon(Icons.play_circle_filled,
-                          color: _device != null ? Colors.black : Colors.grey),
+                          color: _device != null ? Colors.green[500] : Colors.grey, size: 40,),
                     ),
                     new Text(
                       _device != null ? "Wearable" : "Wearable (no device)",
@@ -174,7 +176,7 @@ class _HomePageState extends State<HomePage> {
                     Container(
                       padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                       child: new Icon(Icons.play_circle_filled,
-                          color: _device != null ? Colors.black : Colors.grey),
+                          color: _device != null ? Colors.green[500] : Colors.grey, size: 40,),
                     ),
                     new Text(
                       _device != null ? "Wearable" : "Wearable (no device)",
@@ -250,5 +252,34 @@ class _HomePageState extends State<HomePage> {
       ),
     );
     _readHighscores();
+  }
+
+  _openSettings() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SettingsPage(
+          title: "Settings",
+        ),
+      ),
+    );
+    setState(() {});
+  }
+
+  void _readColor() async {
+    final prefs = await SharedPreferences.getInstance();
+    if(prefs.getInt('arrow_upward') != null) {
+      SettingsPage.upArrowColor = Color(prefs.getInt('arrow_upward'));
+    }
+    if(prefs.getInt('arrow_forward') != null) {
+      SettingsPage.rightArrowColor = Color(prefs.getInt('arrow_forward'));
+    }
+    if(prefs.getInt('arrow_back') != null) {
+      SettingsPage.leftArrowColor = Color(prefs.getInt('arrow_back'));
+    }
+    if(prefs.getInt('arrow_downward') != null) {
+      SettingsPage.downArrowColor = Color(prefs.getInt('arrow_downward'));
+    }
+    setState(() {});
   }
 }

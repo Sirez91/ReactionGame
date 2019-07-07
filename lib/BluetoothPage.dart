@@ -103,14 +103,11 @@ class _BluetoothPageState extends State<BluetoothPage> {
         .scan(
       timeout: const Duration(seconds: 5),
       /*withServices: [
-          new Guid('0000180F-0000-1000-8000-00805F9B34FB')
-        ]*/
+          new Guid("713d0000503e4c75ba943148f18d941e")
+        ], */
+      withDevices: [new Guid("5445434f205765617261626c65203100")]
     )
         .listen((scanResult) {
-      print('localName: ${scanResult.advertisementData.localName}');
-      print(
-          'manufacturerData: ${scanResult.advertisementData.manufacturerData}');
-      print('serviceData: ${scanResult.advertisementData.serviceData}');
       setState(() {
         scanResults[scanResult.device.id] = scanResult;
       });
@@ -180,22 +177,6 @@ class _BluetoothPageState extends State<BluetoothPage> {
     return new LinearProgressIndicator();
   }
 
-  _buildScanningButton() {
-    if (isConnected || state != BluetoothState.on) {
-      return null;
-    }
-    if (isScanning) {
-      return new FloatingActionButton(
-        child: new Icon(Icons.stop),
-        onPressed: _stopScan,
-        backgroundColor: Colors.red,
-      );
-    } else {
-      return new FloatingActionButton(
-          child: new Icon(Icons.search), onPressed: _scanButtonAction);
-    }
-  }
-
   void _onItemTapped(int index) {
     if (index == 1) {
       if (isConnected) {
@@ -234,11 +215,11 @@ class _BluetoothPageState extends State<BluetoothPage> {
       bottomNavigationBar: BottomNavigationBar(items: <BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: Icon(Icons.bluetooth_searching),
-          title: Text("Search"),
+          title: isScanning ? Text("Stop") : Text("Search"),
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.bluetooth_disabled),
-          title: Text("Disconnect"),
+          title: Text("Disconnect & Clear"),
         )
       ], onTap: _onItemTapped),
       appBar: new AppBar(
