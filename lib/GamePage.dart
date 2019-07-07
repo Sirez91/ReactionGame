@@ -19,12 +19,18 @@ class GamePage extends StatefulWidget {
     if (device == null) {
       return _NoVibrateGamePageState(device);
     } else {
-      return _VibrateGamePageState(device);
+      if(title == "Mixed Reaction Game") {
+        return _MixedGamePageState(device);
+      } else {
+        return _VibrateGamePageState(device);
+      }
     }
   }
 }
 
 abstract class _GamePageState extends State<GamePage> {
+  bool _gameIsRunning = false;
+
 
   _GamePageState(this._device, this._iconSize);
 
@@ -80,8 +86,10 @@ abstract class _GamePageState extends State<GamePage> {
       _saveHighscore(_counter);
     }
     _counter = 0;
+    _gameIsRunning = false;
     return showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) {
           return AlertDialog(
             title: Text('GAME OVER'),
@@ -90,6 +98,7 @@ abstract class _GamePageState extends State<GamePage> {
                 child: new Text('OK'),
                 onPressed: () {
                   Navigator.of(context).pop();
+                  setState(() { });
                 },
               )
             ],
@@ -114,11 +123,13 @@ abstract class _GamePageState extends State<GamePage> {
   }
 
   void buttonAction(IconData icon) {
-    _timer.cancel();
-    if (_activeIcon == icon) {
-      _startAnimation();
-    } else {
-      _gameOver();
+    if(_gameIsRunning) {
+      _timer.cancel();
+      if (_activeIcon == icon) {
+        _startAnimation();
+      } else {
+        _gameOver();
+      }
     }
   }
 
@@ -266,10 +277,11 @@ abstract class _GamePageState extends State<GamePage> {
                 ),
               ],
             ),
+            Container(height: 80,)
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: _gameIsRunning ? null : FloatingActionButton(
         onPressed: _startRound,
         tooltip: 'start animation',
         child: Icon(Icons.play_arrow),
@@ -278,7 +290,10 @@ abstract class _GamePageState extends State<GamePage> {
   }
 
   void _startRound() {
-    _startAnimation();
+    if(!_gameIsRunning) {
+      _startAnimation();
+      _gameIsRunning = true;
+    }
   }
 }
 
@@ -289,12 +304,12 @@ class _VibrateGamePageState extends _GamePageState {
   @override
   initState() {
     super.initState();
-    _readHighscore("VibrateHighscore");
+    _readHighscore("reactionGameBluetoothHighscore");
   }
 
   _saveHighscore(int score) async {
     final prefs = await SharedPreferences.getInstance();
-    final key = 'VibrateHighscore';
+    final key = 'reactionGameBluetoothHighscore';
     prefs.setInt(key, score);
     setState(() {});
   }
@@ -361,16 +376,88 @@ class _NoVibrateGamePageState extends _GamePageState {
   @override
   initState() {
     super.initState();
-    _readHighscore("NoVibrateHighscore");
+    _readHighscore("reactionGameClassicHighscore");
   }
 
   _saveHighscore(int score) async {
     final prefs = await SharedPreferences.getInstance();
-    final key = 'NoVibrateHighscore';
+    final key = 'reactionGameClassicHighscore';
     prefs.setInt(key, score);
   }
 
   _writeCharacteristic() {}
 
   _stopVibration() {}
+}
+
+class _MixedGamePageState extends _GamePageState {
+
+  _MixedGamePageState(BluetoothDevice device) : super(device, 75);
+
+  @override
+  initState() {
+    super.initState();
+    _readHighscore("reactionGameMixedHighscore");
+  }
+
+  _saveHighscore(int score) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'reactionGameMixedHighscore';
+    prefs.setInt(key, score);
+    setState(() {});
+  }
+
+
+  _writeCharacteristic() async {
+    BluetoothCharacteristic bluetoothCharacteristic = BluetoothCharacteristic(
+        uuid: Guid("713d0003-503e-4c75-ba94-3148f18d941e"),
+        serviceUuid: Guid("713d0000-503e-4c75-ba94-3148f18d941e"),
+        descriptors: null,
+        properties: CharacteristicProperties(
+            broadcast: false,
+            read: true,
+            writeWithoutResponse: true,
+            write: true,
+            notify: false,
+            indicate: false,
+            authenticatedSignedWrites: false,
+            extendedProperties: false,
+            notifyEncryptionRequired: false,
+            indicateEncryptionRequired: false
+        ));
+    List<int> valueToWrite;
+    if (_activeIcon == Icons.arrow_upward) {
+      valueToWrite = [0xFF, 0x00, 0x00, 0x00];
+    } else if (_activeIcon == Icons.arrow_back) {
+      valueToWrite = [0x00, 0x00, 0x00, 0xFF];
+    } else if (_activeIcon == Icons.arrow_forward) {
+      valueToWrite = [0x00, 0xFF, 0x00, 0x00];
+    } else {
+      valueToWrite = [0x00, 0x00, 0xFF, 0x00];
+    }
+    await _device.writeCharacteristic(bluetoothCharacteristic, valueToWrite,
+        type: CharacteristicWriteType.withoutResponse);
+  }
+
+  _stopVibration() async {
+    BluetoothCharacteristic bluetoothCharacteristic = BluetoothCharacteristic(
+        uuid: Guid("713d0003-503e-4c75-ba94-3148f18d941e"),
+        serviceUuid: Guid("713d0000-503e-4c75-ba94-3148f18d941e"),
+        descriptors: null,
+        properties: CharacteristicProperties(
+            broadcast: false,
+            read: true,
+            writeWithoutResponse: true,
+            write: true,
+            notify: false,
+            indicate: false,
+            authenticatedSignedWrites: false,
+            extendedProperties: false,
+            notifyEncryptionRequired: false,
+            indicateEncryptionRequired: false
+        ));
+    await _device.writeCharacteristic(
+        bluetoothCharacteristic, [0x00, 0x00, 0x00, 0x00],
+        type: CharacteristicWriteType.withoutResponse);
+  }
 }

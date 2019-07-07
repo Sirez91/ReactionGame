@@ -32,11 +32,27 @@ class _HomePageState extends State<HomePage> {
 
   _HomePageState(this._device);
 
-  String _gameOneHighscore = "0";
+  String _reactionGameClassicHighscore = "0";
+  String _reactionGameBluetoothHighscore = "0";
+  String _reactionGameMixedHighscore = "0";
 
   _readHighscores() async {
     final prefs = await SharedPreferences.getInstance();
-    _gameOneHighscore = prefs.getInt("NoVibrateHighscore").toString() ?? "0";
+    _reactionGameClassicHighscore =
+        prefs.getInt("reactionGameClassicHighscore").toString();
+    _reactionGameBluetoothHighscore =
+        prefs.getInt("reactionGameBluetoothHighscore").toString();
+    _reactionGameMixedHighscore =
+        prefs.getInt("reactionGameMixedHighscore").toString();
+    if (_reactionGameClassicHighscore == "null") {
+      _reactionGameClassicHighscore = "0";
+    }
+    if (_reactionGameBluetoothHighscore == "null") {
+      _reactionGameBluetoothHighscore = "0";
+    }
+    if (_reactionGameMixedHighscore == "null") {
+      _reactionGameMixedHighscore = "0";
+    }
     setState(() {});
   }
 
@@ -54,9 +70,9 @@ class _HomePageState extends State<HomePage> {
           title: Text(widget.title),
           actions: <Widget>[
             PopupMenuButton(itemBuilder: (BuildContext context) {
-              return <PopupMenuEntry> [
+              return <PopupMenuEntry>[
                 PopupMenuItem(
-                  value: "test",
+                  value: "Settings",
                   child: FlatButton.icon(
                     icon: Icon(Icons.settings),
                     label: Text("Settings"),
@@ -64,14 +80,13 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 PopupMenuItem(
-                  value: "test2",
+                  value: "Connect Bluetooth Device",
                   child: FlatButton.icon(
                     icon: Icon(Icons.bluetooth),
                     label: Text("Connect Bluetooth Device"),
-                      onPressed: () => _openBluetooth(),
+                    onPressed: () => _openBluetooth(),
                   ),
                 ),
-
               ];
             })
           ],
@@ -80,46 +95,123 @@ class _HomePageState extends State<HomePage> {
             // Center is a layout widget. It takes a single child and positions it
             // in the middle of the parent.
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                new Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Padding(
+                padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
+                child: new Text("Choose the Game Mode",
+                    style: TextStyle(fontSize: 26))),
+            Padding(
+              padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
+              child: new GestureDetector(
+                onTap: () => _startClassicGame(),
+                child: new Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    new IconButton(
-                        icon: Icon(Icons.play_circle_filled),
-                        onPressed: () => _startGame()),
-                    new Text("Game Variant One"),
-                    Spacer(flex: 3,),
-                    new Text("Highscore: " + _gameOneHighscore),
-                    Container(width: 50,)
+                    Container(
+                      padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                      child: new Icon(Icons.play_circle_filled),
+                    ),
+                    new Text(
+                      "Classic",
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    Spacer(
+                      flex: 3,
+                    ),
+                    new Text("Highscore: " + _reactionGameClassicHighscore),
+                    Container(
+                      width: 20,
+                    )
                   ],
                 ),
-                new Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
+              child: new GestureDetector(
+                onTap: _device != null
+                    ? () => _startBluetoothGame()
+                    : () => _openBluetooth(),
+                child: new Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    new IconButton(
-                        icon: Icon(Icons.play_circle_filled),
-                        onPressed: () => _startGame()),
-                    new Text("Game Variant 1212212"),
-                    Spacer(flex: 3,),
-                    new Text("Highscore: " + _gameOneHighscore),
-                    Container(width: 50,)
+                    Container(
+                      padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                      child: new Icon(Icons.play_circle_filled,
+                          color: _device != null ? Colors.black : Colors.grey),
+                    ),
+                    new Text(
+                      _device != null ? "Wearable" : "Wearable (no device)",
+                      style: TextStyle(
+                          color: _device != null ? Colors.black : Colors.grey,
+                          fontSize: 20),
+                    ),
+                    Spacer(
+                      flex: 3,
+                    ),
+                    new Text(
+                      "Highscore: " + _reactionGameBluetoothHighscore,
+                      style: TextStyle(
+                          color: _device != null ? Colors.black : Colors.grey),
+                    ),
+                    Container(
+                      width: 20,
+                    )
                   ],
                 ),
-              ],
-            )));
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
+              child: new GestureDetector(
+                onTap: _device != null
+                    ? () => _startMixedGame()
+                    : () => _openBluetooth(),
+                child: new Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                      child: new Icon(Icons.play_circle_filled,
+                          color: _device != null ? Colors.black : Colors.grey),
+                    ),
+                    new Text(
+                      _device != null ? "Wearable" : "Wearable (no device)",
+                      style: TextStyle(
+                          color: _device != null ? Colors.black : Colors.grey,
+                          fontSize: 20),
+                    ),
+                    Spacer(
+                      flex: 3,
+                    ),
+                    new Text(
+                      "Highscore: " + _reactionGameMixedHighscore,
+                      style: TextStyle(
+                          color: _device != null ? Colors.black : Colors.grey),
+                    ),
+                    Container(
+                      width: 20,
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ],
+        )));
   }
 
-  _startGame() {
-    Navigator.push(
+  _startClassicGame() async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => GamePage(
-          title: "Game",
-          device: _device,
-        ),
+              title: "Classic Reaction Game",
+              device: null,
+            ),
       ),
     );
+    _readHighscores();
   }
 
   _openBluetooth() async {
@@ -127,11 +219,36 @@ class _HomePageState extends State<HomePage> {
       context,
       MaterialPageRoute(
         builder: (context) => BluetoothPage(
-          title: "Bluetooth",
-        ),
+              title: "Bluetooth",
+            ),
       ),
     ) as BluetoothDevice;
+    setState(() {});
   }
 
+  _startBluetoothGame() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GamePage(
+              title: "Wearable Reaction Game",
+              device: _device,
+            ),
+      ),
+    );
+    _readHighscores();
+  }
 
+  _startMixedGame() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GamePage(
+              title: "Mixed Reaction Game",
+              device: _device,
+            ),
+      ),
+    );
+    _readHighscores();
+  }
 }
