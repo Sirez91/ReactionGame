@@ -179,7 +179,7 @@ class _HomePageState extends State<HomePage> {
                           color: _device != null ? Colors.green[500] : Colors.grey, size: 40,),
                     ),
                     new Text(
-                      _device != null ? "Wearable" : "Wearable (no device)",
+                      _device != null ? "Mixed" : "Mixed (no device)",
                       style: TextStyle(
                           color: _device != null ? Colors.black : Colors.grey,
                           fontSize: 20),

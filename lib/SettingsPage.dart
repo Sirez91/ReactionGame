@@ -44,7 +44,7 @@ class SettingsState extends State<SettingsPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 const Text(
-                  ' Tab an Icon to\nchange its color',
+                  ' Tap an icon to\nchange its color',
                   style: TextStyle(fontSize: 30),
                 ),
               ],
